@@ -33,7 +33,17 @@ public class TripPoint {
         return this.time;
     }
     public static ArrayList<TripPoint> getTrip() {
-        return (ArrayList<TripPoint>)trip.clone();
+        ArrayList<TripPoint> copiedList = new ArrayList<>();
+
+        // Using a loop to copy each element from original to copied list
+        for (TripPoint point : trip) {
+            // Assuming TripPoint has a copy constructor or is immutable
+            // If not, you may need to create new TripPoint objects
+            TripPoint copiedPoint = new TripPoint(point.getTime(), point.getLat(), point.getLon());
+            copiedList.add(copiedPoint);
+        }
+
+        return copiedList;
     }
 
     public static void readFile(String fileName) throws FileNotFoundException{
@@ -43,45 +53,43 @@ public class TripPoint {
             br.readLine();
             String line;
             while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length >= 3) {
-                    int time = Integer.parseInt(parts[0]);
+                String[] parts = line.split(","); // split based on comma
+                if (parts.length >= 3) { // ensure line is formatted properly
+                    int time = Integer.parseInt(parts[0]); // assign values while parsing to correct values
                     double latitude = Double.parseDouble(parts[1]);
                     double longitude = Double.parseDouble(parts[2]);
-                    trip.add(new TripPoint(time, latitude, longitude));
+                    trip.add(new TripPoint(time, latitude, longitude)); // add to list
                 } else {
-                    System.err.println("Incorrect file formating at line: " + line);
+                    System.err.println("Incorrect file formating at line: " + line); //error message if file formatted incorectly
                 }
             }
         } catch (IOException e) {
-            System.err.println("Error reading the file: " + e.getMessage());
+            System.err.println("Error reading the file: " + e.getMessage()); // filename is wrong
         } catch (NumberFormatException e) {
-            System.err.println("Error converting latitude/longitude to double: " + e.getMessage());
+            System.err.println("Error converting latitude/longitude to double: " + e.getMessage()); // lat or long is formatted inccorectly
         }
     }
 
-    private static double EarthRadiusKm = 6371.0; // Radius of the Earth in kilometers
+    private static double EarthRadiusKm = 6371.0; // constant for radius of the Earth in kilometers
 
-    public static double DegreesToRadians(double degrees)
+    public static double DegreesToRadians(double degrees) // convert from degree to radian for haversine formula
     {
         return degrees * Math.PI / 180.0;
     }
 
     public static double haversineDistance(TripPoint a, TripPoint b)
     {
-        double lat1 = DegreesToRadians(a.getLat());
+        double lat1 = DegreesToRadians(a.getLat()); // assign lats and lons to variables 
         double lon1 = DegreesToRadians(a.getLon());
         double lat2 = DegreesToRadians(b.getLat());
         double lon2 = DegreesToRadians(b.getLon());
 
-        double deltaLat = lat2 - lat1;
-        double deltaLon = lon2 - lon1;
+        double deltaLat = lat2 - lat1; // change in lat
+        double deltaLon = lon2 - lon1; // change in lon
 
-        double c = Math.pow(Math.sin(deltaLat / 2), 2) +
-                   Math.cos(lat1) * Math.cos(lat2) *
-                   Math.pow(Math.sin(deltaLon / 2), 2);
+        double c = Math.pow(Math.sin(deltaLat / 2), 2) + Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(deltaLon / 2), 2); // formula p1
 
-        double d = 2 * Math.atan2(Math.sqrt(c), Math.sqrt(1 - c));
+        double d = 2 * Math.atan2(Math.sqrt(c), Math.sqrt(1 - c)); // formula p2
 
         double distance = EarthRadiusKm * d;
 
@@ -89,23 +97,43 @@ public class TripPoint {
     }
 
     public static double totalDistance(){
-        double totalDist = 0.0;
+        double totalDist = 0.0; // create variable
 
-        TripPoint point1;
+        TripPoint point1; //create empty trippoints
         TripPoint point2;
 
-        for(int i = 1; i < trip.size(); i++){
+        for(int i = 1; i < trip.size(); i++){ // loop through trip arraylist and get distance between then add to totalDist
             point1 = trip.get(i - 1);
             point2 = trip.get(i);
 
             totalDist += haversineDistance(point1, point2);
         }
 
-        return totalDist;
+        return totalDist; //return
     }
 
     public static double totalTime(){
 
-        return (trip.get(trip.size() - 1).getTime() / 60.0);
+        return (trip.get(trip.size() - 1).getTime() / 60.0); // get time of the final tripPoint then convert to hours
+    }
+
+    public static double avgSpeed(TripPoint a, TripPoint b){
+        double time = 0.0; // declare variables
+        double dist = 0.0;
+
+        double speed = 0.0;
+
+        dist = haversineDistance(b, a); //get distance
+
+        if(a.getTime() > b.getTime()){ // get time
+            time = a.getTime() - b.getTime();
+        }
+        else {
+            time = b.getTime() - a.getTime();
+        }
+
+        speed = (dist / 135 );
+
+        return speed; // calc speed d/t
     }
 }
