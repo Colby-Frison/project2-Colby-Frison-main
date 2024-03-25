@@ -117,23 +117,10 @@ public class TripPoint {
         return (trip.get(trip.size() - 1).getTime() / 60.0); // get time of the final tripPoint then convert to hours
     }
 
-    public static double avgSpeed(TripPoint a, TripPoint b){
-        double time = 0.0; // declare variables
-        double dist = 0.0;
-
-        double speed = 0.0;
-
-        dist = haversineDistance(b, a); //get distance
-
-        if(a.getTime() > b.getTime()){ // get time
-            time = a.getTime() - b.getTime();
-        }
-        else {
-            time = b.getTime() - a.getTime();
-        }
-
-        speed = (dist / 135 );
-
-        return speed; // calc speed d/t
+    public static double avgSpeed(TripPoint point1, TripPoint point2) {
+        double distance = haversineDistance(point1, point2); // Calculate distance between the points
+        double timeDifference = Math.abs(point2.getTime() - point1.getTime()); // Calculate time difference between the points in hours
+    
+        return distance / (timeDifference / 60); // Calculate and return average speed
     }
 }
